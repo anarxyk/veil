@@ -31,6 +31,7 @@ start:
     call status_ok
     call enable_pic
     sti
+    jmp hang    ;skip fail path after a successful setup
 
 idt_bad:
     mov edi, 0xb8000 + 160 * 6
@@ -97,6 +98,8 @@ status_bad:
     mov esi, bad_text
     call write
     mov esi, idt_reason
+    call write
+    mov esi, in_text
     call write
     pop eax
     call number
@@ -167,6 +170,7 @@ irq_label db "irq 16 handlers", 0
 ok_text db " OK in ", 0
 bad_text db " BAD - ", 0
 idt_reason db "load check failed", 0
+in_text db " in ", 0
 ms_text db "ms", 0
 idtr_check times 6 db 0
 
