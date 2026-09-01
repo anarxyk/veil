@@ -25,8 +25,12 @@ start:
     call timer_start
     call init_pic
     call status_ok
-    cli
-    hlt
+    mov edi, 0xb8000 + 160 * 9
+    mov esi, irq_label
+    call timer_start
+    call status_ok
+    call enable_pic
+    sti
 
 idt_bad:
     mov edi, 0xb8000 + 160 * 6
@@ -36,6 +40,7 @@ idt_bad:
     jmp hang
 
 hang:
+    pause
     hlt
     jmp hang
 
@@ -158,6 +163,7 @@ color db 0x0f
 idt_label db "idt 256 entries 32 exceptions", 0
 kernel_label db "kernel", 0
 pic_label db "pic 32-47", 0
+irq_label db "irq 16 handlers", 0
 ok_text db " OK in ", 0
 bad_text db " BAD - ", 0
 idt_reason db "load check failed", 0
