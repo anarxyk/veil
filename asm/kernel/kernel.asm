@@ -32,6 +32,7 @@ start:
     call enable_pic
     sti
     jmp hang    ;skip fail path after a successful setup
+                ;ouu shii it works in ~600ms
 
 idt_bad:
     mov edi, 0xb8000 + 160 * 6
