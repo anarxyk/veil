@@ -2,7 +2,7 @@
 
 A os project im revisiting and plan to, for the most part actually get it done
 
-## Progress — ~12%
+## Progress -- ~12%
 
 `█░░░░░░░░░ 12%`
 
