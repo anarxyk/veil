@@ -8,7 +8,7 @@ A os project im revisiting and plan to, for the most part actually get it done
 
 * [x] Boot
 * [x] x32
-* [-] IDT
+* [ ] IDT
 * [ ] Interrupts
 * [ ] Memory Management
 * [ ] x64
