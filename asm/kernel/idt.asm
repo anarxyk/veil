@@ -20,6 +20,17 @@ init_idt:
     add edi, 8
     add esi, 4
     loop .exceptions
+
+    mov edi, idt + 32 * 8
+    mov esi, irq_table
+    mov ecx, 16
+
+.irqs:
+    mov eax, [esi]
+    call set_gate
+    add edi, 8
+    add esi, 4
+    loop .irqs
     ret
 
 set_gate:
@@ -50,6 +61,20 @@ exception_common:
     call write
     hlt
     jmp $
+
+irq_common:
+    pushad
+    mov eax, [esp + 32]
+    cmp eax, 40
+    jb .master
+    mov al, 0x20
+    out 0xa0, al
+.master:
+    mov al, 0x20
+    out 0x20, al
+    popad
+    add esp, 4
+    iretd
 
 %macro no_error 1
 exception_%1:
@@ -106,6 +131,35 @@ exception_table:
     dd exception_20, exception_21, exception_22, exception_23
     dd exception_24, exception_25, exception_26, exception_27
     dd exception_28, exception_29, exception_30, exception_31
+
+%macro irq 1
+irq_%1:
+    push dword 32 + %1
+    jmp irq_common
+%endmacro
+
+irq 0
+irq 1
+irq 2
+irq 3
+irq 4
+irq 5
+irq 6
+irq 7
+irq 8
+irq 9
+irq 10
+irq 11
+irq 12
+irq 13
+irq 14
+irq 15
+
+irq_table:
+    dd irq_0, irq_1, irq_2, irq_3
+    dd irq_4, irq_5, irq_6, irq_7
+    dd irq_8, irq_9, irq_10, irq_11
+    dd irq_12, irq_13, irq_14, irq_15
 
 idt:
     times 256 dq 0
