@@ -1,5 +1,7 @@
 bits 32
 
+global keyboard_read
+
 init_keyboard:
     mov byte [key_head], 0
     mov byte [key_tail], 0
@@ -35,13 +37,13 @@ keyboard_irq:
     and al, 31
     cmp al, [key_tail]
     je .full
+    mov [key_head], al
     mov al, [last_ascii]
     mov byte [key_queue + edi * 4], al
     mov byte [key_queue + edi * 4 + 1], bl
     mov byte [key_queue + edi * 4 + 2], dl
     mov al, [key_flags]
     mov byte [key_queue + edi * 4 + 3], al
-    mov [key_head], al
 .full:
     ret
 
@@ -90,6 +92,16 @@ update_modifiers:
 
 map_key:
     xor eax, eax
+    cmp bl, 0x1d
+    je .done
+    cmp bl, 0x2a
+    je .done
+    cmp bl, 0x36
+    je .done
+    cmp bl, 0x38
+    je .done
+    cmp bl, 0x3a
+    je .done
     cmp bl, 2
     jb .done
     cmp bl, 0x30
@@ -201,6 +213,26 @@ keyboard_next:
 .empty:
     popf
     stc
+    ret
+
+keyboard_read:
+    push edi
+    call keyboard_next
+    jc .empty
+    mov edi, [esp + 8]
+    mov [edi], al
+    mov al, [last_key]
+    mov [edi + 1], al
+    mov al, [last_state]
+    mov [edi + 2], al
+    mov al, [last_flags]
+    mov [edi + 3], al
+    pop edi
+    mov eax, 1
+    ret
+.empty:
+    pop edi
+    xor eax, eax
     ret
 
 key_head db 0
