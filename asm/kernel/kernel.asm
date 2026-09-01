@@ -20,6 +20,11 @@ start:
     mov esi, kernel_label
     call timer_start
     call status_ok
+    mov edi, 0xb8000 + 160 * 8
+    mov esi, pic_label
+    call timer_start
+    call init_pic
+    call status_ok
     cli
     hlt
 
@@ -152,6 +157,7 @@ timer_value dw 0
 color db 0x0f
 idt_label db "idt 256 entries 32 exceptions", 0
 kernel_label db "kernel", 0
+pic_label db "pic 32-47", 0
 ok_text db " OK in ", 0
 bad_text db " BAD - ", 0
 idt_reason db "load check failed", 0
@@ -159,3 +165,4 @@ ms_text db "ms", 0
 idtr_check times 6 db 0
 
 %include "asm/kernel/idt.asm"
+%include "asm/kernel/pic.asm"
