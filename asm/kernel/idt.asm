@@ -144,8 +144,10 @@ irq_0:
     jmp irq_common
 
 irq_1:
+    push eax ;saves original eax cs i forgot to do that
     in al, 0x60
     mov [keyboard_scancode], al
+    pop eax ;restores it
     push dword 33
     jmp irq_common
 irq 2
