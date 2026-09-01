@@ -1,218 +1,188 @@
+;ima idiot and commits will look stupid, i put keyboard where kernel should be so mbbbb
 bits 32
+org 0x10000
 
-init_keyboard:
-    mov byte [key_head], 0
-    mov byte [key_tail], 0
-    mov byte [keyboard_scancode], 0
-    mov byte [key_flags], 0
-    mov byte [extended], 0
-    ret
-
-keyboard_irq:
-    mov [keyboard_scancode], al
-    cmp al, 0xe0
-    jne .key
-    mov byte [extended], 1
-    ret
-.key:
-    mov bl, al
-    xor dl, dl
-    test bl, 0x80
-    jz .press
-    mov dl, 1
-.press:
-    and bl, 0x7f
-    call update_modifiers
-    call map_key
-    mov ah, [extended]
-    shl ah, 7
-    or bl, ah
-    mov byte [extended], 0
-    mov [last_ascii], al
-    movzx edi, byte [key_head]
-    mov eax, edi
-    inc al
-    and al, 31
-    cmp al, [key_tail]
-    je .full
-    mov al, [last_ascii]
-    mov byte [key_queue + edi * 4], al
-    mov byte [key_queue + edi * 4 + 1], bl
-    mov byte [key_queue + edi * 4 + 2], dl
-    mov al, [key_flags]
-    mov byte [key_queue + edi * 4 + 3], al
-    mov [key_head], al
-.full:
-    ret
-
-update_modifiers:
-    cmp bl, 0x2a
-    je .shift
-    cmp bl, 0x36
-    je .shift
-    cmp bl, 0x1d
-    je .ctrl
-    cmp bl, 0x38
-    je .alt
-    cmp bl, 0x3a
-    je .caps
-    ret
-.shift:
-    test dl, dl
-    jnz .clear_shift
-    or byte [key_flags], 1
-    ret
-.clear_shift:
-    and byte [key_flags], 0xfe
-    ret
-.ctrl:
-    test dl, dl
-    jnz .clear_ctrl
-    or byte [key_flags], 2
-    ret
-.clear_ctrl:
-    and byte [key_flags], 0xfd
-    ret
-.alt:
-    test dl, dl
-    jnz .clear_alt
-    or byte [key_flags], 4
-    ret
-.clear_alt:
-    and byte [key_flags], 0xfb
-    ret
-.caps:
-    test dl, dl
-    jnz .done
-    xor byte [key_flags], 8
-.done:
-    ret
-
-map_key:
-    xor eax, eax
-    cmp bl, 2
-    jb .done
-    cmp bl, 0x30
-    ja .special
-    movzx esi, bl
-    sub esi, 2
-    mov al, [keymap_normal + esi]
-    cmp al, 'a'
-    jb .symbol
-    cmp al, 'z'
-    ja .symbol
-    mov ah, [key_flags]
-    test ah, 9
-    jz .done
-    mov al, [keymap_shift + esi]
-    ret
-.symbol:
-    test byte [key_flags], 1
-    jz .done
-    mov al, [keymap_shift + esi]
-    ret
-.special:
-    cmp bl, 0x31
-    je .n
-    cmp bl, 0x32
-    je .m
-    cmp bl, 0x33
-    je .comma
-    cmp bl, 0x34
-    je .period
-    cmp bl, 0x35
-    je .slash
-    cmp bl, 0x39
-    je .space
-    cmp bl, 0x1c
-    je .enter
-    cmp bl, 0x0e
-    je .backspace
-    cmp bl, 0x0f
-    je .tab
-    ret
-.n:
-    mov al, 'n'
-    jmp .letter
-.m:
-    mov al, 'm'
-    jmp .letter
-.comma:
-    mov al, ','
-    mov ah, '<'
-    jmp .punctuation
-.period:
-    mov al, '.'
-    mov ah, '>'
-    jmp .punctuation
-.slash:
-    mov al, '/'
-    mov ah, '?'
-    jmp .punctuation
-.space:
-    mov al, ' '
-    ret
-.enter:
-    mov al, 10
-    ret
-.backspace:
-    mov al, 8
-    ret
-.tab:
-    mov al, 9
-    ret
-.letter:
-    test byte [key_flags], 9
-    jz .done
-    sub al, 32
-    ret
-.punctuation:
-    test byte [key_flags], 1
-    jz .normal
-    mov al, ah
-    ret
-.normal:
-    ret
-.done:
-    ret
-
-keyboard_next:
-    pushf
+start:
     cli
-    mov al, [key_tail]
-    cmp al, [key_head]
-    je .empty
-    movzx edi, al
-    mov al, [key_queue + edi * 4]
-    mov [last_ascii], al
-    mov al, [key_queue + edi * 4 + 1]
-    mov [last_key], al
-    mov al, [key_queue + edi * 4 + 2]
-    mov [last_state], al
-    mov al, [key_queue + edi * 4 + 3]
-    mov [last_flags], al
-    inc byte [key_tail]
-    and byte [key_tail], 31
-    popf
-    clc
-    mov al, [last_ascii]
-    mov ah, [last_state]
+    cld
+    call init_timer
+    mov edi, 0xb8000 + 160 * 6
+    mov esi, idt_label
+    call timer_start
+    call init_idt
+    lidt [idtr]
+    sidt [idtr_check]
+    call check_idt
+    jc idt_bad
+    mov edi, 0xb8000 + 160 * 6
+    mov esi, idt_label
+    call status_ok
+    mov edi, 0xb8000 + 160 * 7
+    mov esi, kernel_label
+    call timer_start
+    call status_ok
+    mov edi, 0xb8000 + 160 * 8
+    mov esi, pic_label
+    call timer_start
+    call init_pic
+    call status_ok
+    mov edi, 0xb8000 + 160 * 9
+    mov esi, irq_label
+    call timer_start
+    call status_ok
+    mov edi, 0xb8000 + 160 * 10
+    mov esi, keyboard_label
+    call timer_start
+    call init_keyboard
+    call status_ok
+    call enable_pic
+    sti
+    jmp hang ;skip fail path after a successful setup
+             ;ouu shii it works in ~600ms
+
+idt_bad:
+    mov edi, 0xb8000 + 160 * 6
+    mov esi, idt_label
+    call status_bad
+    cli
+    jmp hang
+
+hang:
+    pause
+    hlt
+    jmp hang
+
+init_timer:
+    mov al, 0x34
+    out 0x43, al
+    mov ax, 1193
+    out 0x40, al
+    mov al, ah
+    out 0x40, al
     ret
-.empty:
-    popf
+
+timer_start:
+    mov al, 0
+    out 0x43, al
+    in al, 0x40
+    mov ah, al
+    in al, 0x40
+    xchg al, ah
+    mov [timer_value], ax
+    ret
+
+timer_elapsed:
+    mov al, 0
+    out 0x43, al
+    in al, 0x40
+    mov ah, al
+    in al, 0x40
+    xchg al, ah
+    movzx edx, ax
+    movzx eax, word [timer_value]
+    sub eax, edx
+    ret
+
+status_ok:
+    call timer_elapsed
+    push eax
+    mov byte [color], 0x0a
+    call write
+    mov esi, ok_text
+    call write
+    pop eax
+    call number
+    mov esi, ms_text
+    call write
+    call newline
+    ret
+
+status_bad:
+    call timer_elapsed
+    push eax
+    mov byte [color], 0x0c
+    call write
+    mov esi, bad_text
+    call write
+    mov esi, idt_reason
+    call write
+    mov esi, in_text
+    call write
+    pop eax
+    call number
+    mov esi, ms_text
+    call write
+    ret
+
+check_idt:
+    mov ax, [idtr_check]
+    cmp ax, [idtr]
+    jne .bad
+    mov eax, [idtr_check + 2]
+    cmp eax, [idtr + 2]
+    jne .bad
+    clc
+    ret
+.bad:
     stc
     ret
 
-key_head db 0
-key_tail db 0
-keyboard_scancode db 0
-key_flags db 0
-extended db 0
-last_ascii db 0
-last_key db 0
-last_state db 0
-last_flags db 0
-key_queue times 128 db 0
+write:
+    cld
+.next:
+    lodsb
+    test al, al
+    jz .done
+    mov ah, [color]
+    stosw
+    jmp .next
+.done:
+    ret
 
-keymap_normal db "1234567890-=", 8, 9, "qwertyuiop[]", 10, 0, "asdfghjkl;'", 0, "\\zxcvb"
-keymap_shift db "!@#$%^&*()_+", 8, 9, "QWERTYUIOP{}", 10, 0, "ASDFGHJKL:", 34, 0, "|ZXCVB"
+number:
+    test eax, eax
+    jnz .convert
+    mov al, '0'
+    mov ah, [color]
+    stosw
+    ret
+.convert:
+    xor ecx, ecx
+    mov ebx, 10
+.divide:
+    xor edx, edx
+    div ebx
+    push dx
+    inc ecx
+    test eax, eax
+    jnz .divide
+.output:
+    pop dx
+    mov al, dl
+    add al, '0'
+    mov ah, [color]
+    stosw
+    loop .output
+    ret
+
+newline:
+    ret
+
+timer_value dw 0
+timer_ticks dd 0
+color db 0x0f
+idt_label db "idt 256 entries 32 exceptions", 0
+kernel_label db "kernel", 0
+pic_label db "pic 32-47", 0
+irq_label db "irq 0 timer + irq 1 keyboard", 0
+keyboard_label db "keyboard map + modifiers", 0
+ok_text db " OK in ", 0
+bad_text db " BAD - ", 0
+idt_reason db "load check failed", 0
+in_text db " in ", 0
+ms_text db "ms", 0
+idtr_check times 6 db 0
+
+%include "asm/kernel/idt.asm"
+%include "asm/kernel/pic.asm"
+%include "asm/kernel/keyboard.asm"
