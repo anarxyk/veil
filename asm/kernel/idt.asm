@@ -34,7 +34,7 @@ set_gate:
 
 default_handler:
     cli
-    mov edi, 0xb8000 + 160 * 8
+    mov edi, 0xb8000 + 160 * 10
     mov esi, interrupt_message
     mov byte [color], 0x0c
     call write
@@ -44,7 +44,7 @@ default_handler:
 
 exception_common:
     cli
-    mov edi, 0xb8000 + 160 * 8
+    mov edi, 0xb8000 + 160 * 10
     mov esi, exception_message
     mov byte [color], 0x0c
     call write
