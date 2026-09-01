@@ -143,7 +143,11 @@ irq_0:
     push dword 32
     jmp irq_common
 
-irq 1
+irq_1:
+    in al, 0x60
+    mov [keyboard_scancode], al
+    push dword 33
+    jmp irq_common
 irq 2
 irq 3
 irq 4
