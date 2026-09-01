@@ -150,7 +150,7 @@ newline:
 
 timer_value dw 0
 color db 0x0f
-idt_label db "idt 256 entries", 0
+idt_label db "idt 256 entries 32 exceptions", 0
 kernel_label db "kernel", 0
 ok_text db " OK in ", 0
 bad_text db " BAD - ", 0
