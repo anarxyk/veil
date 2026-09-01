@@ -31,8 +31,8 @@ start:
     call status_ok
     call enable_pic
     sti
-    jmp hang    ;skip fail path after a successful setup
-                ;ouu shii it works in ~600ms
+    jmp hang ;skip fail path after a successful setup
+             ;ouu shii it works in ~600ms
 
 idt_bad:
     mov edi, 0xb8000 + 160 * 6
@@ -164,6 +164,7 @@ newline:
 
 timer_value dw 0
 timer_ticks dd 0
+keyboard_scancode db 0
 color db 0x0f
 idt_label db "idt 256 entries 32 exceptions", 0
 kernel_label db "kernel", 0
