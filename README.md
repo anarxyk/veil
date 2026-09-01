@@ -4,11 +4,12 @@ A os project im revisiting and plan to, for the most part actually get it done
 
 ## Progress — ~9%
 
-`█░░░░░░░░░ 9%`
+`██░░░░░░░░ 16%`
 
 * [x] Boot
 * [x] x32
-* [ ] IDT (in prg)
+* [x] IDT
+* [ ] I/O
 * [ ] Interrupts
 * [ ] Memory Management
 * [ ] x64
