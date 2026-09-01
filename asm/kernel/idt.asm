@@ -45,7 +45,7 @@ set_gate:
 
 default_handler:
     cli
-    mov edi, 0xb8000 + 160 * 10
+    mov edi, 0xb8000 + 160 * 12
     mov esi, interrupt_message
     mov byte [color], 0x0c
     call write
@@ -55,7 +55,7 @@ default_handler:
 
 exception_common:
     cli
-    mov edi, 0xb8000 + 160 * 10
+    mov edi, 0xb8000 + 160 * 12
     mov esi, exception_message
     mov byte [color], 0x0c
     call write
@@ -144,10 +144,10 @@ irq_0:
     jmp irq_common
 
 irq_1:
-    push eax ;saves original eax cs i forgot to do that
+    pushad
     in al, 0x60
-    mov [keyboard_scancode], al
-    pop eax ;restores it
+    call keyboard_irq
+    popad
     push dword 33
     jmp irq_common
 irq 2
