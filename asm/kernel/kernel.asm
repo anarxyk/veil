@@ -163,6 +163,7 @@ newline:
     ret
 
 timer_value dw 0
+timer_ticks dd 0
 color db 0x0f
 idt_label db "idt 256 entries 32 exceptions", 0
 kernel_label db "kernel", 0
