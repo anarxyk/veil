@@ -32,6 +32,12 @@ init_pic:
     out 0xa1, al
     ret
 
+enable_pic:
+    xor al, al
+    out 0x21, al
+    out 0xa1, al
+    ret
+
 io_wait:
     out 0x80, al
     ret
