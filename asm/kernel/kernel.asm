@@ -1,6 +1,7 @@
-;ima idiot and commits will look stupid, i put keyboard where kernel should be so mbbbb
 bits 32
-org 0x10000
+
+global start
+extern input_poll
 
 start:
     cli
@@ -48,6 +49,7 @@ idt_bad:
     jmp hang
 
 hang:
+    call input_poll
     pause
     hlt
     jmp hang
