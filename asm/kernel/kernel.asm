@@ -169,7 +169,7 @@ color db 0x0f
 idt_label db "idt 256 entries 32 exceptions", 0
 kernel_label db "kernel", 0
 pic_label db "pic 32-47", 0
-irq_label db "irq 16 handlers", 0
+irq_label db "irq 0 timer + irq 1 keyboard", 0
 ok_text db " OK in ", 0
 bad_text db " BAD - ", 0
 idt_reason db "load check failed", 0
