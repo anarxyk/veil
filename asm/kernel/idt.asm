@@ -138,7 +138,11 @@ irq_%1:
     jmp irq_common
 %endmacro
 
-irq 0
+irq_0:
+    inc dword [timer_ticks]
+    push dword 32
+    jmp irq_common
+
 irq 1
 irq 2
 irq 3
