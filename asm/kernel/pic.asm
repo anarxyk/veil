@@ -33,8 +33,9 @@ init_pic:
     ret
 
 enable_pic:
-    xor al, al
+    mov al, 0xfc
     out 0x21, al
+    mov al, 0xff
     out 0xa1, al
     ret
 
