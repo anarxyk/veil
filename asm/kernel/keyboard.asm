@@ -245,8 +245,7 @@ last_key db 0
 last_state db 0
 last_flags db 0
 key_queue times 128 db 0
-;kinda messed up last "fix", forgot entries for grave/backtick, left shift and backslash pos, so entire bottom row and "|" shifted 
-keymap_normal db "1234567890-=", 8, 9, "qwertyuiop[]", 10, 0, "asdfghjkl;'", 0, 92, "zxcvb"
-keymap_shift db "!@#$%^&*()_+", 8, 9, "QWERTYUIOP{}", 10, 0, "ASDFGHJKL:", 34, 0, "|ZXCVB"
+
 keymap_normal db "1234567890-=", 8, 9, "qwertyuiop[]", 10, 0, "asdfghjkl;'", 0, 0, 92, "zxcvb"
 keymap_shift db "!@#$%^&*()_+", 8, 9, "QWERTYUIOP{}", 10, 0, "ASDFGHJKL:", 34, '~', 0, "|ZXCVB"
+;i think this is the right one, unless it's the old iter
