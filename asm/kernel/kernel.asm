@@ -7,6 +7,7 @@ start:
     cli
     cld
     call init_timer
+    call init_serial
     mov edi, 0xb8000 + 160 * 6
     mov esi, idt_label
     call timer_start
@@ -35,6 +36,10 @@ start:
     mov esi, keyboard_label
     call timer_start
     call init_keyboard
+    call status_ok
+    mov edi, 0xb8000 + 160 * 11
+    mov esi, io_label
+    call timer_start
     call status_ok
     call enable_pic
     sti
@@ -135,6 +140,7 @@ write:
     lodsb
     test al, al
     jz .done
+    call serial_put
     mov ah, [color]
     stosw
     jmp .next
@@ -178,6 +184,7 @@ kernel_label db "kernel", 0
 pic_label db "pic 32-47", 0
 irq_label db "irq 0 timer + irq 1 keyboard", 0
 keyboard_label db "keyboard map + modifiers", 0
+io_label db "io + serial", 0
 ok_text db " OK in ", 0
 bad_text db " BAD - ", 0
 idt_reason db "load check failed", 0
@@ -188,3 +195,4 @@ idtr_check times 6 db 0
 %include "asm/kernel/idt.asm"
 %include "asm/kernel/pic.asm"
 %include "asm/kernel/keyboard.asm"
+%include "asm/kernel/io.asm"
