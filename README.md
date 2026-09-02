@@ -14,8 +14,8 @@ A os project im revisiting and plan to, for the most part actually get it done
 - [x] IRQs
 - [x] Timer
 - [x] Keyboard input
-- [ ] I/O
-- [ ] Console
+- [x] I/O (in prg)
+- [x] Console (in prg)
 - [ ] Serial output
 - [ ] Memory Management
 - [ ] Physical memory allocator
