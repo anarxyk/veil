@@ -9,6 +9,21 @@ static unsigned int cursor = 14 * 80;
 static char line[128];
 static unsigned int length;
 
+static void scroll_console(void) {
+    unsigned int row;
+    unsigned int column;
+
+    for (row = 14; row < 24; row++) {
+        for (column = 0; column < 80; column++) {
+            video[row * 80 + column] = video[(row + 1) * 80 + column];
+        }
+    }
+    for (column = 0; column < 80; column++) {
+        video[24 * 80 + column] = 0x0f20;
+    }
+    cursor = 24 * 80;
+}
+
 static void draw(byte value) {
     serial_put(value);
     if (value == 0) {
@@ -21,8 +36,12 @@ static void draw(byte value) {
         }
         return;
     }
+    //scrolling is very important
     if (value == 10) {
         cursor = ((cursor / 80) + 1) * 80;
+        if (cursor >= 25 * 80) {
+            scroll_console();
+        }
         return;
     }
     if (value == 9) {
@@ -33,6 +52,7 @@ static void draw(byte value) {
     cursor++;
     if (cursor >= 25 * 80) {
         cursor = 14 * 80;
+        scroll_console();
     }
 }
 
