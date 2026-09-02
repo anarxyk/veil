@@ -245,6 +245,6 @@ last_key db 0
 last_state db 0
 last_flags db 0
 key_queue times 128 db 0
-
-keymap_normal db "1234567890-=", 8, 9, "qwertyuiop[]", 10, 0, "asdfghjkl;'", 0, "\\zxcvb"
+;bottom row keymap had two backslash bytes instead of one shifting uppercase letters
+keymap_normal db "1234567890-=", 8, 9, "qwertyuiop[]", 10, 0, "asdfghjkl;'", 0, 92, "zxcvb"
 keymap_shift db "!@#$%^&*()_+", 8, 9, "QWERTYUIOP{}", 10, 0, "ASDFGHJKL:", 34, 0, "|ZXCVB"
