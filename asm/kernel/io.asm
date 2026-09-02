@@ -1,36 +1,130 @@
 bits 32
 
-global init_serial
-global serial_put
+global inb
+global inw
+global inl
+global outb
+global outw
+global outl
+global io_wait
+global insb
+global outsb
+global mmio_read8
+global mmio_read16
+global mmio_read32
+global mmio_write8
+global mmio_write16
+global mmio_write32
+global memory_barrier
+global irq_save
+global irq_restore
 
-%macro outb 2
-    mov dx, %1
-    mov al, %2
-    out dx, al
-%endmacro
-
-init_serial:
-    outb 0x3f9, 0
-    outb 0x3fb, 0x80
-    outb 0x3f8, 3
-    outb 0x3f9, 0
-    outb 0x3fb, 3
-    outb 0x3fa, 0xc7
-    outb 0x3fc, 0x0b
+inb:
+    mov edx, [esp + 4]
+    xor eax, eax
+    in al, dx
     ret
 
-serial_put:
-    push eax
-    push edx
-    mov ah, al
-.wait:
-    mov dx, 0x3fd
-    in al, dx
-    test al, 0x20
-    jz .wait
-    mov al, ah
-    mov dx, 0x3f8
+inw:
+    mov edx, [esp + 4]
+    xor eax, eax
+    in ax, dx
+    ret
+
+inl:
+    mov edx, [esp + 4]
+    in eax, dx
+    ret
+
+outb:
+    mov edx, [esp + 4]
+    mov eax, [esp + 8]
     out dx, al
-    pop edx
+    ret
+
+outw:
+    mov edx, [esp + 4]
+    mov eax, [esp + 8]
+    out dx, ax
+    ret
+
+outl:
+    mov edx, [esp + 4]
+    mov eax, [esp + 8]
+    out dx, eax
+    ret
+
+io_wait:
+    xor eax, eax
+    out 0x80, al
+    ret
+
+insb:
+    push edi
+    mov edx, [esp + 8]
+    mov edi, [esp + 12]
+    mov ecx, [esp + 16]
+    cld
+    rep insb
+    pop edi
+    ret
+
+outsb:
+    push esi
+    mov edx, [esp + 8]
+    mov esi, [esp + 12]
+    mov ecx, [esp + 16]
+    cld
+    rep outsb
+    pop esi
+    ret
+
+mmio_read8:
+    mov edx, [esp + 4]
+    xor eax, eax
+    mov al, [edx]
+    ret
+
+mmio_read16:
+    mov edx, [esp + 4]
+    xor eax, eax
+    mov ax, [edx]
+    ret
+
+mmio_read32:
+    mov edx, [esp + 4]
+    mov eax, [edx]
+    ret
+
+mmio_write8:
+    mov edx, [esp + 4]
+    mov eax, [esp + 8]
+    mov [edx], al
+    ret
+
+mmio_write16:
+    mov edx, [esp + 4]
+    mov eax, [esp + 8]
+    mov [edx], ax
+    ret
+
+mmio_write32:
+    mov edx, [esp + 4]
+    mov eax, [esp + 8]
+    mov [edx], eax
+    ret
+
+memory_barrier:
+    lock or dword [esp], 0
+    ret
+
+irq_save:
+    pushfd
     pop eax
+    cli
+    ret
+
+irq_restore:
+    push dword [esp + 4]
+    popfd
     ret
