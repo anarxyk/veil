@@ -33,12 +33,8 @@ init_pic:
     ret
 
 enable_pic:
-    mov al, 0xfc
+    mov al, 0xec
     out 0x21, al
     mov al, 0xff
     out 0xa1, al
-    ret
-
-io_wait:
-    out 0x80, al
     ret
