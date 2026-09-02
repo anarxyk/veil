@@ -1,10 +1,13 @@
 typedef unsigned char byte;
 typedef unsigned short word;
 
+extern void serial_put(byte value);
+
 static volatile word *video = (volatile word *)0xb8000;
 static unsigned int cursor = 12 * 80;
 
 void console_put(byte value) {
+    serial_put(value);
     if (value == 0) {
         return;
     }
