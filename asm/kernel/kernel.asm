@@ -2,6 +2,7 @@ bits 32
 
 global start
 extern input_poll
+extern init_console
 
 start:
     cli
@@ -41,6 +42,11 @@ start:
     mov esi, io_label
     call timer_start
     call status_ok
+    mov edi, 0xb8000 + 160 * 12
+    mov esi, console_label
+    call timer_start
+    call status_ok
+    call init_console
     call enable_pic
     sti
     jmp hang ;skip fail path after a successful setup
@@ -185,6 +191,7 @@ pic_label db "pic 32-47", 0
 irq_label db "irq 0 timer + irq 1 keyboard", 0
 keyboard_label db "keyboard map + modifiers", 0
 io_label db "io + serial", 0
+console_label db "console", 0
 ok_text db " OK in ", 0
 bad_text db " BAD - ", 0
 idt_reason db "load check failed", 0
