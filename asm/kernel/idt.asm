@@ -1,5 +1,7 @@
 bits 32
 
+extern serial_irq
+
 init_idt:
     mov edi, idt
     mov eax, default_handler
@@ -152,7 +154,12 @@ irq_1:
     jmp irq_common
 irq 2
 irq 3
-irq 4
+irq_4:
+    pushad
+    call serial_irq
+    popad
+    push dword 36
+    jmp irq_common
 irq 5
 irq 6
 irq 7
