@@ -2,9 +2,10 @@ typedef unsigned char byte;
 typedef unsigned short word;
 
 extern void serial_put(byte value);
+extern volatile unsigned int timer_ticks;
 
 static volatile word *video = (volatile word *)0xb8000;
-static unsigned int cursor = 13 * 80;
+static unsigned int cursor = 14 * 80;
 static char line[128];
 static unsigned int length;
 
@@ -14,7 +15,7 @@ static void draw(byte value) {
         return;
     }
     if (value == 8) {
-        if (cursor > 13 * 80) {
+        if (cursor > 14 * 80) {
             cursor--;
             video[cursor] = 0x0f20;
         }
@@ -31,7 +32,7 @@ static void draw(byte value) {
     video[cursor] = ((word)0x0f << 8) | value;
     cursor++;
     if (cursor >= 25 * 80) {
-        cursor = 13 * 80;
+        cursor = 14 * 80;
     }
 }
 
@@ -52,10 +53,18 @@ static int same(const char *left, const char *right) {
 
 static void clear_console(void) {
     unsigned int index;
-    for (index = 13 * 80; index < 25 * 80; index++) {
+    for (index = 14 * 80; index < 25 * 80; index++) {
         video[index] = 0x0f20;
     }
-    cursor = 13 * 80;
+    cursor = 14 * 80;
+}
+
+static void clear_screen(void) {
+    unsigned int index;
+    for (index = 0; index < 25 * 80; index++) {
+        video[index] = 0x0f20;
+    }
+    cursor = 14 * 80;
 }
 
 static void prompt(void) {
@@ -76,8 +85,21 @@ static void command(void) {
     }
 }
 
-void init_console(void) {
+void start_console(void) {
+    unsigned int end;
+
     length = 0;
+    clear_screen();
+    cursor = 10 * 80 + 34;
+    text("VEIL");
+    cursor = 11 * 80 + 25;
+    text("x32 protected mode");
+    cursor = 12 * 80 + 24;
+    text("starting console...");
+    end = timer_ticks + 500;
+    while (timer_ticks < end) {
+    }
+    clear_console();
     prompt();
 }
 
