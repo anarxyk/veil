@@ -1,8 +1,10 @@
 bits 32
 
 global start
+global timer_ticks
 extern input_poll
 extern init_console
+extern start_console
 
 start:
     cli
@@ -10,6 +12,11 @@ start:
     call init_timer
     call init_serial
     mov edi, 0xb8000 + 160 * 6
+    mov esi, pae_label
+    call timer_start
+    call init_pae
+    call status_ok
+    mov edi, 0xb8000 + 160 * 7
     mov esi, idt_label
     call timer_start
     call init_idt
@@ -21,39 +28,47 @@ start:
     mov esi, idt_label
     call status_ok
     mov edi, 0xb8000 + 160 * 7
+    mov edi, 0xb8000 + 160 * 8
     mov esi, kernel_label
     call timer_start
     call status_ok
     mov edi, 0xb8000 + 160 * 8
+    mov edi, 0xb8000 + 160 * 9
     mov esi, pic_label
     call timer_start
     call init_pic
     call status_ok
     mov edi, 0xb8000 + 160 * 9
+    mov edi, 0xb8000 + 160 * 10
     mov esi, irq_label
     call timer_start
     call status_ok
     mov edi, 0xb8000 + 160 * 10
+    mov edi, 0xb8000 + 160 * 11
     mov esi, keyboard_label
     call timer_start
     call init_keyboard
     call status_ok
     mov edi, 0xb8000 + 160 * 11
+    mov edi, 0xb8000 + 160 * 12
     mov esi, io_label
     call timer_start
     call status_ok
     mov edi, 0xb8000 + 160 * 12
+    mov edi, 0xb8000 + 160 * 13
     mov esi, console_label
     call timer_start
     call status_ok
     call init_console
     call enable_pic
     sti
+    call start_console
     jmp hang ;skip fail path after a successful setup
              ;ouu shii it works in ~600ms
 
 idt_bad:
     mov edi, 0xb8000 + 160 * 6
+    mov edi, 0xb8000 + 160 * 7
     mov esi, idt_label
     call status_bad
     cli
@@ -72,6 +87,12 @@ init_timer:
     out 0x40, al
     mov al, ah
     out 0x40, al
+    ret
+
+init_pae:
+    mov eax, cr4
+    or eax, 1 << 5
+    mov cr4, eax
     ret
 
 timer_start:
@@ -186,6 +207,7 @@ timer_value dw 0
 timer_ticks dd 0
 color db 0x0f
 idt_label db "idt 256 entries 32 exceptions", 0
+pae_label db "pae", 0
 kernel_label db "kernel", 0
 pic_label db "pic 32-47", 0
 irq_label db "irq 0 timer + irq 1 keyboard", 0
